@@ -3,15 +3,52 @@ import re
 import string
 import csv
 import pandas as pd
+from unidecode import unidecode
 # nltk.download('stopwords')
 # pip install pyenchant
 from enchant.checker import SpellChecker
 from nltk.corpus import stopwords
 
-def abstract_check(text) -> list[str]:
+def clean_text(text:str) -> str:
+    '''
+        [...] 选择...中的东西
+        [^...] 表示不选择...中的东西
+        [A-Z] [a-z] 选A-Z中的内容
+        [\w] 匹配下划线
+    '''
     # 去除中文
     text = re.sub('[\u4e00-\u9fa5]','',text)
+    # 去掉数字
+    text = re.sub('\d+', '', str(text))
+    ## Remove special characters
+    text = unidecode(text)
+    ## Remove any non-letter characters except for regular sentence-ending punctuation
+    text = re.sub(r'[^a-zA-Z\s\.!\?\\n]', '', text)
+    ## Replace all \s with a single space except for \n
+    # 换掉 tab(\t)
+    # 换掉垂直制表符(\x0B)
+    # 换掉换页符 \f
+    # 换掉回车符
+    text = re.sub(r'[ \t\x0B\f\r]+', ' ', text)
+    ## Replace a newline with a dot and a space
+    # * 表示尽可能多地匹配空格，也就是匹配连续的空格
+    # \s 匹配任何空白字符，包括空格、制表符、换页符
+    text = re.sub(r'\s*\n\s*', '. ', text)
+    ## Remove any leading or trailing spaces
+    text = text.strip()
+    ## Remove duplicates white space
+    # 移除多余的空格
+    text = re.sub(r'^\s+', "", text)
+    ## Only keep words that has length longer than 2 characters 
+    text = ' '.join([x for x in text.split() if len(x)>2 or x=='of'])      
+    ## remove dots
+    # 移除点号
+    text = re.sub(r'\.*', '', text)
+    return text
+
+def abstract_check(text) -> list[str]:
     # 分词
+    text = clean_text(text)
     text = nltk.word_tokenize(text)
     # 去掉停用词
     stop = set(stopwords.words('english'))

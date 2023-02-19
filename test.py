@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
-import jieba
+# import jieba
 from sklearn.feature_extraction.text import CountVectorizer
 import re
+import nltk
+from unidecode import unidecode
 
 def get_string(self, each_file):
     temp = self.readtxt(each_file)
@@ -18,13 +20,20 @@ def get_string(self, each_file):
 data = pd.read_csv('new_clean.csv')
 # stop_words = 'en_stopwords.txt'
 
-print(data.iloc[7,3])
+# print(data.iloc[7,3])
+test_str = data.iloc[7,3]
+# print(type(test_str))
+# qq = re.sub('\d+', '', str(test_str))
+# qq = re.sub(r'\.*', '', qq)
+# print(qq)
 # for sample in data['abstract']:
-words = [sample for sample in data['abstract']]
+# words = [nltk.word_tokenize(sample) for sample in data['abstract']]
+# print(words[7])
+# print(words[11])
 # print(words[0].split())
 
-cv = CountVectorizer(stop_words='english')
-cv_fit = cv.fit_transform(words)
+# cv = CountVectorizer(stop_words='english')
+# cv_fit = cv.fit_transform(words)
 # print(cv.get_feature_names_out())
 
 # f=open("k.txt","w")
