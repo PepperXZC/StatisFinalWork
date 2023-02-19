@@ -45,6 +45,18 @@ with open('metadata.csv', 'r', encoding='UTF-8') as f_in:
 data = pd.read_csv('new_clean.csv')
 print(data.iloc[7,3])
 ```
-以及，英语以外的语言检测暂时还没有解决方法。
+p.s. 英语以外的语言检测暂时还没有解决方法。
 
+p.p.s 须安装`nltk`包以及`pyenchant`进行程序的使用。
+
+`pyenchant`对应的安装语句：`pip install pyenchant`
+
+`nltk`包在安装时`_sqlite3`的缺失问题。这需要自己去官网下载对应的文件，补入环境文件中的`DLLs`文件夹下。具体操作请参照 CSDN 链接：[CSDN](https://blog.csdn.net/qq_42685893/article/details/116519140)
+
+安装后在调用一些库时仍然会报错，解决代码会在报错中提示，请在`cmd`或`anaconda prompt`中在对应的环境下运行`python`后进入交互环境，并运行如下代码：
+```python
+>>> import nltk
+>>> nltk.download('stopwords')
+```
+至少有两次类似的问题，请仿照上面的操作将第二次报错解决。这`nltk`包安装产生的通病。
 
