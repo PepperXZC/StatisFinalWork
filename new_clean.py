@@ -147,5 +147,12 @@ for index in tqdm(range(data.shape[0])):
     data.iloc[index, 2] = " ".join(abstract_check(text))
 
 # 保存最终处理好的文件
-data.to_csv('new_clean.csv')
+# data.to_csv('new_clean.csv')
     # data.iloc[index, 2] = 0
+
+# 删除abstract部分字符长度少于30的样本
+# data = pd.read_csv('new_clean.csv')
+data = data[data['abstract'].str.len() >= 30]
+data = data.drop('Unnamed: 0',axis=1)
+# print(data)
+data.to_csv('new_clean_later.csv')

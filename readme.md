@@ -61,3 +61,9 @@ p.p.s 须安装`nltk`包以及`pyenchant`进行程序的使用。
 至少有两次类似的问题，请仿照上面的操作将第二次报错解决。这`nltk`包安装产生的通病。
 
 2-19 12点34分 更新了 `new_clean`中的`abstract_check`方法，其中添加了`clean_text`方法，因为`nltk`自带的符号去除函数并不能很好地去除纯数字与特殊符号。我暂时没有运行这个函数，因为这将消耗大量的时间。其中不乏一些重复的删除空格一类的操作，可以考虑删去以节省程序运行时间。
+
+2-19 18点12分：打开`new_clean.csv`发现还存在着一些空摘要、摘要内容为`author`的样本，在`new_clean.csv`的最后补全了如下代码:
+```python
+data = data[data['abstract'].str.len() >= 30]
+```
+由`excel`直接显示的`csv`文件会导致解码出现异常。典型的状况是：在`pandas`中读取`abstract`发现没有任何问题的摘要文本，但是在`excel`中读取发现`author`列与`abstract`列数据紊乱（两者颠倒了），我默认在`pandas`中没问题就ok

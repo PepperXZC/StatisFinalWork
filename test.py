@@ -6,17 +6,35 @@ import re
 import nltk
 from unidecode import unidecode
         
-data = pd.read_csv('new_clean.csv')
+data = pd.read_csv('new_clean_later.csv')
+# data = data[data['abstract'].str.len() >= 30]
+# data = data.drop('Unnamed: 0',axis=1)
+# # print(data)
+# data.to_csv('new_clean_later.csv')
 corpus = data['abstract'].to_list()
-
 cv = CountVectorizer(stop_words='english')
 cv_fit = cv.fit_transform(corpus)
-print(cv.get_feature_names_out())
+# liebiao = cv.get_feature_names_out()
+# for key in liebiao:
+#     print(key)
 
-# toarray 转化出：(样本，词频) 矩阵。
-# 对应每个样本在每个column(每个column对应的单词由get_feature_names_out给出)下的词语出现次数
+print(cv_fit.toarray().shape)
+# data['length_take'] = data.abstract.apply(lambda x: len(x) > 5)
+# data = data[len(data['abstract']) >= 1]
 
-res = cv_fit.toarray()
+
+# df = data['[' not in data['abstract']]
+# data = data.drop('covid_abstract',axis=1)
+# data.to_csv('new_clean_later.csv')
+
+
+
+# print(cv.get_feature_names_out())
+
+# # toarray 转化出：(样本，词频) 矩阵。
+# # 对应每个样本在每个column(每个column对应的单词由get_feature_names_out给出)下的词语出现次数
+
+# res = cv_fit.toarray()
 # count_0 = np.where(res, 0, 1)
 # print(res.shape) # (39675, 77027)
 # print(res.sum()) # 4257805
