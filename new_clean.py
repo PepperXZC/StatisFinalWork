@@ -8,6 +8,7 @@ from unidecode import unidecode
 # pip install pyenchant
 from enchant.checker import SpellChecker
 from nltk.corpus import stopwords
+from tqdm import tqdm
 
 def clean_text(text:str) -> str:
     '''
@@ -139,7 +140,7 @@ data = data.reset_index(drop=True)
 # print(data)
 # 对每个 abstract 进行文本处理
 # res = {}
-for index in range(data.shape[0]):
+for index in tqdm(range(data.shape[0])):
     text = data.iloc[index, 2]
     # uid = data.iloc[index, 0]
     # res[uid] = abstract_check(text)

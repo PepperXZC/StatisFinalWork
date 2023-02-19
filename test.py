@@ -5,23 +5,24 @@ from sklearn.feature_extraction.text import CountVectorizer
 import re
 import nltk
 from unidecode import unidecode
-
-def get_string(self, each_file):
-    temp = self.readtxt(each_file)
-    if len(temp) <= 1:
-        return ''
-    else:
-        rp = ''.join([i for i in temp if not i.isdigit()])
-        rp = re.sub('[\W_]+', '', rp)
-        sentences = rp.split()
-        sent_words = [list(jieba.cut(sent0)) for sent0 in sentences]
-        return sent_words
         
 data = pd.read_csv('new_clean.csv')
-# stop_words = 'en_stopwords.txt'
+corpus = data['abstract'].to_list()
 
-# print(data.iloc[7,3])
-test_str = data.iloc[7,3]
+cv = CountVectorizer(stop_words='english')
+cv_fit = cv.fit_transform(corpus)
+print(cv.get_feature_names_out())
+
+# toarray 转化出：(样本，词频) 矩阵。
+# 对应每个样本在每个column(每个column对应的单词由get_feature_names_out给出)下的词语出现次数
+
+res = cv_fit.toarray()
+# count_0 = np.where(res, 0, 1)
+# print(res.shape) # (39675, 77027)
+# print(res.sum()) # 4257805
+
+# print(np.sum(count_0))
+# test_str = data.iloc[7,3]
 # print(type(test_str))
 # qq = re.sub('\d+', '', str(test_str))
 # qq = re.sub(r'\.*', '', qq)
@@ -32,8 +33,7 @@ test_str = data.iloc[7,3]
 # print(words[11])
 # print(words[0].split())
 
-# cv = CountVectorizer(stop_words='english')
-# cv_fit = cv.fit_transform(words)
+
 # print(cv.get_feature_names_out())
 
 # f=open("k.txt","w")
