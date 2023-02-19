@@ -15,9 +15,10 @@ def get_string(self, each_file):
         sent_words = [list(jieba.cut(sent0)) for sent0 in sentences]
         return sent_words
         
-data = pd.read_csv('after.csv')
-stop_words = 'en_stopwords.txt'
-print(data['abstract'])
+data = pd.read_csv('new_clean.csv')
+# stop_words = 'en_stopwords.txt'
+
+print(data.iloc[7,3])
 # for sample in data['abstract']:
 words = [sample for sample in data['abstract']]
 # print(words[0].split())
@@ -25,11 +26,12 @@ words = [sample for sample in data['abstract']]
 cv = CountVectorizer(stop_words='english')
 cv_fit = cv.fit_transform(words)
 # print(cv.get_feature_names_out())
-f=open("k.txt","w")
-l = cv.get_feature_names_out()
-for key in l:   
-    f.writelines(key + '\n')
-f.close()
+
+# f=open("k.txt","w")
+# l = cv.get_feature_names_out()
+# for key in l:   
+#     f.writelines(key + '\n')
+# f.close()
 # print(cv.vocabulary_)
 # tfidf_model = TfidfVectorizer(smooth_idf=True,
 #                               max_df=0.90,

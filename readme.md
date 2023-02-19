@@ -39,3 +39,12 @@ with open('metadata.csv', 'r', encoding='UTF-8') as f_in:
 后面暂时不写了，先记录一下实验。
 
 2-19 11点13分：将`clean.py`中的代码逻辑优化并归为新的`new_clean.py`文件中。该文件从`metadata.csv`中导出一个经过分词处理好棋摘要的文件`new_clean.csv`。重新读取时，请注意其每个`abstract`中为字符串，须重新导入分词后的`list`格式中使用该数据。程序运行时间较长。
+
+2-19 12点08分 注意到有些字符在中文解码下出现了些问题，可在`excel`与`pandas`中分别调用查看`data.iloc[7,3]`看到。再后续调用分词操作的时候，需要考虑将这些内容删去。对此可直接调用的操作如下：
+```python
+data = pd.read_csv('new_clean.csv')
+print(data.iloc[7,3])
+```
+以及，英语以外的语言检测暂时还没有解决方法。
+
+
