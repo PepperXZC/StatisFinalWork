@@ -2,6 +2,7 @@ import nltk
 import re
 import string
 import csv
+import sys
 import pandas as pd
 from unidecode import unidecode
 # nltk.download('stopwords')
@@ -98,11 +99,13 @@ print(data.columns)
 data['publish_time'] = pd.to_datetime(data['publish_time'])
 # 检测 2020 年间的所有论文
 start_date = pd.to_datetime('2020-1-31', format='%Y-%m-%d')
-end_date = pd.to_datetime('2020-12-31', format='%Y-%m-%d')
+end_date = pd.to_datetime('2020-5-31', format='%Y-%m-%d')
 
 data = data[data.publish_time.isin(pd.date_range(start_date, end_date, freq='D'))]
 data['publish_year'] = data['publish_time'].dt.year
 
+print(data.shape)
+# exit()
 # 清洗掉abstract为空的样本
 # print(data.shape) # (81643, 6)
 data = data.dropna(subset=['abstract'])
@@ -140,6 +143,7 @@ data = data.reset_index(drop=True)
 # print(data)
 # 对每个 abstract 进行文本处理
 # res = {}
+print("分词前大小：", data.shape)
 for index in tqdm(range(data.shape[0])):
     text = data.iloc[index, 2]
     # uid = data.iloc[index, 0]
@@ -155,4 +159,4 @@ for index in tqdm(range(data.shape[0])):
 data = data[data['abstract'].str.len() >= 30]
 data = data.drop('Unnamed: 0',axis=1)
 # print(data)
-data.to_csv('new_clean_later.csv')
+data.to_csv('new_clean_later_half.csv')

@@ -5,7 +5,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 import re
 import nltk
 from unidecode import unidecode
-        
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+
 data = pd.read_csv('new_clean_later.csv')
 # data = data[data['abstract'].str.len() >= 30]
 # data = data.drop('Unnamed: 0',axis=1)
@@ -17,8 +19,13 @@ cv_fit = cv.fit_transform(corpus)
 # liebiao = cv.get_feature_names_out()
 # for key in liebiao:
 #     print(key)
+data = cv_fit.toarray()
 
-print(cv_fit.toarray().shape)
+pca = PCA(n_components=2)
+x = pca.fit_transform(data)
+plt.scatter(x[0].tolist(), x[1].tolist(), color='r')
+plt.show()
+
 # data['length_take'] = data.abstract.apply(lambda x: len(x) > 5)
 # data = data[len(data['abstract']) >= 1]
 

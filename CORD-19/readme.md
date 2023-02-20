@@ -67,5 +67,3 @@ p.p.s 须安装`nltk`包以及`pyenchant`进行程序的使用。
 data = data[data['abstract'].str.len() >= 30]
 ```
 由`excel`直接显示的`csv`文件会导致解码出现异常。典型的状况是：在`pandas`中读取`abstract`发现没有任何问题的摘要文本，但是在`excel`中读取发现`author`列与`abstract`列数据紊乱（两者颠倒了），我默认在`pandas`中没问题就ok
-
-2-19 19点17分 设置取样本于2020的上半年，共`36118`个数据；原本取整个2020年的数据，共`81643`个数据。
