@@ -84,7 +84,7 @@ class Bayes:
             res.append(pos.argmax())
         return np.array(res)
 
-class LogisticRegression:
+class LogReg:
     def __init__(self) -> None:
         self.n = 5
         std = np.sqrt(2. / (5 + 1))
@@ -137,15 +137,15 @@ def LDA_predict(train_x, test_x, train_y, test_y):
     # print(y_pred)
     print("(LDA)测试集预测精度为acc=",np.sum(y_pred==test_y.reshape(-1))/len(y_pred))
     evaluate(y_pred, test_y)
-    # from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as skLDA
-    # lda= skLDA(n_components=1, solver='svd')
-    # lda.fit(train_x,train_y)
+    from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as skLDA
+    lda= skLDA(n_components=1, solver='svd')
+    lda.fit(train_x,train_y)
 
-    # X_sklearn = lda.transform(train_x)
-    # y_pred_sklearn = lda.predict(test_x)
-    # # print(y_pred_sklearn)
+    X_sklearn = lda.transform(train_x)
+    y_pred_sklearn = lda.predict(test_x)
+    # print(y_pred_sklearn)
     # print(np.sum(np.array([y_pred == y_pred_sklearn])))
-    # print ('LDA的正确率:',lda.score(test_x,test_y))
+    print ('LDA的正确率:',lda.score(test_x,test_y))
 
 def bayes_predict(train_x, test_x, train_y, test_y):
     bayes = Bayes()
@@ -156,12 +156,17 @@ def bayes_predict(train_x, test_x, train_y, test_y):
     return
 
 def LR_predict(train_x, test_x, train_y, test_y):
-    LR = LogisticRegression()
+    LR = LogReg()
     LR.fit(train_x, train_y)
     y_pred = LR.predict(test_x)
 
     print("(LR)测试集预测精度为acc=",np.sum(y_pred==test_y.reshape(-1))/len(y_pred))
     evaluate(y_pred, test_y)
+    from sklearn.linear_model import LogisticRegression
+    LR = LogisticRegression().fit(train_x, train_y)
+    # y_pred = LR.predict(test_x)
+    print("(LR) sklearn版本正确率：", LR.score(test_x, test_y))
+
 
 if __name__ == '__main__':
     data = pd.read_csv('kaggle\WA_Fn-UseC_-Telco-Customer-Churn.csv')
