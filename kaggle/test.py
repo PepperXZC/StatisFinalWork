@@ -43,7 +43,7 @@ class LDA:
             h = sample.dot(self.w)
             y = 1 * (h < 0)
             y_pred.append(y)
-        return y_pred
+        return np.array(y_pred)
     # print(w, w[0], w[1])
 
 class Bayes:
@@ -82,7 +82,7 @@ class Bayes:
                         pos[i] *= self.dic[i][feature][most_closed]
             pos = pos * self.P
             res.append(pos.argmax())
-        return res
+        return np.array(res)
 
 class LogisticRegression:
     def __init__(self) -> None:
@@ -118,14 +118,25 @@ class LogisticRegression:
     
     def predict(self,X_test):
         return self.sigmoid(np.dot(X_test, self.w) + self.b) >= 0.5
-    
+
+def evaluate(y_pred, y_true):
+    TP = ((y_pred == 1) & (y_true == 1)).sum()
+    FP = ((y_pred == 1) & (y_true == 0)).sum()
+    FN = ((y_pred == 0) & (y_true == 1)).sum()
+    TN = ((y_pred == 0) & (y_true == 0)).sum()
+    P = TP / (TP + FP)
+    R = TP / (TP + FN)
+    F1 = (2 * P * R) / (P + R)
+    print("查准率:{}, 查全率:{}，F1度量：{}".format(P, R, F1))
+    return P, R, F1
+
 def LDA_predict(train_x, test_x, train_y, test_y):
     lda = LDA()
     X_trans = lda.fit_transform(train_x, train_y)
     y_pred = lda.predict(test_x)
     # print(y_pred)
     print("(LDA)测试集预测精度为acc=",np.sum(y_pred==test_y.reshape(-1))/len(y_pred))
-
+    evaluate(y_pred, test_y)
     # from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as skLDA
     # lda= skLDA(n_components=1, solver='svd')
     # lda.fit(train_x,train_y)
@@ -141,13 +152,16 @@ def bayes_predict(train_x, test_x, train_y, test_y):
     bayes.fit(train_x, train_y)
     y_pred = bayes.predict(test_x)
     print("(bayes)测试集预测精度为acc=",np.sum(y_pred==test_y.reshape(-1))/len(y_pred))
+    evaluate(y_pred, test_y)
+    return
 
 def LR_predict(train_x, test_x, train_y, test_y):
     LR = LogisticRegression()
     LR.fit(train_x, train_y)
     y_pred = LR.predict(test_x)
-    print("(LR)测试集预测精度为acc=",np.sum(y_pred==test_y.reshape(-1))/len(y_pred))
 
+    print("(LR)测试集预测精度为acc=",np.sum(y_pred==test_y.reshape(-1))/len(y_pred))
+    evaluate(y_pred, test_y)
 
 if __name__ == '__main__':
     data = pd.read_csv('kaggle\WA_Fn-UseC_-Telco-Customer-Churn.csv')
