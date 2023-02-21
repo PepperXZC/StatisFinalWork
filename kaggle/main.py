@@ -101,19 +101,18 @@ class LogReg:
         x = np.array(x)
         return 1. / (1. + np.exp(-x))
 
-    def dL(self, w, b, X, y):
+    def derivative(self, w, b, X, y):
         dot = np.dot(X, w) + b
         distance = y - self.sigmoid(dot)
         distance = distance.reshape(-1, 1)
         return np.mean(distance * X, axis=0), np.mean(distance, axis=0)
     
     def fit(self, X, y, epoch=150, lr=0.0001):
-        
         for i in range(epoch):
-            dw, db = self.dL(self.w, self.b, X, y)
+            dw, db = self.derivative(self.w, self.b, X, y)
             self.w += lr * dw
             self.b += lr * db
-        print('epoch:{}, L: {}'.format(i+1, self.ObjectFunction(self.w, self.b, X, y)))
+        # print('epoch:{}, L: {}'.format(i+1, self.ObjectFunction(self.w, self.b, X, y)))
         return
     
     def predict(self,X_test):
@@ -167,38 +166,25 @@ def LR_predict(train_x, test_x, train_y, test_y):
     # y_pred = LR.predict(test_x)
     print("(LR) sklearn版本正确率：", LR.score(test_x, test_y))
 
-
-if __name__ == '__main__':
-    data = pd.read_csv('kaggle\WA_Fn-UseC_-Telco-Customer-Churn.csv')
+def get_data(path):
+    data = pd.read_csv()
     data['TotalCharges']=pd.to_numeric(data['TotalCharges'],errors='coerce')
     # data['tenure']=pd.to_numeric(data['tenure'],errors='coerce')
     data.loc[data['TotalCharges'].isnull().values==True,'TotalCharges'] = data[data['TotalCharges'].isnull().values==True]['MonthlyCharges']
     data = data[['MultipleLines','tenure','PaymentMethod', 'MonthlyCharges', 'TotalCharges', 'Churn']]
-    # data['PaymentMethod'] = pd.factorize(data['PaymentMethod'])[0]
-    # data['MultipleLines'] = pd.factorize(data['MultipleLines'])[0]
-    # data['Churn'] = pd.factorize(data['Churn'])[0]
-    # dropFea = ['gender','PhoneService',
-    #        'OnlineSecurity_No internet service', 'OnlineBackup_No internet service',
-    #        'DeviceProtection_No internet service', 'TechSupport_No internet service',
-    #        'StreamingTV_No internet service', 'StreamingMovies_No internet service',
-    #        ]
     columns = data.columns.to_list()
     for key in columns:
         if key != 'TotalCharges':
             data[key] = pd.factorize(data[key])[0]
-    # for column in dropFea:
-    #     data[column] = pd.factorize(data[column])[0]
-    # print(data.columns.to_list())
-    # features = data.columns
-    # key_dict = data.nunique().to_dict()
-    # for key in features:
-    #     if key_dict[key] <= 10:
-    #         data[key] = pd.factorize(data[key])[0]
-        # data[key]=pd.to_numeric(data[key],errors='coerce')
-    # print(data.nunique().to_dict())
     
     target = data['Churn'].values # 取得所有的 y
     data = data.drop('Churn', axis=1).to_numpy() # 取得 X
+    return data, target
+
+
+if __name__ == '__main__':
+    
+    data, target = get_data('kaggle\WA_Fn-UseC_-Telco-Customer-Churn.csv')
     # print(data)
     # 在外面转成numpy送进去
     train_x, test_x, train_y, test_y = train_test_split(data, target, test_size=0.30, stratify = target, random_state = 1)
