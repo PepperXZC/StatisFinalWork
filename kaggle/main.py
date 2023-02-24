@@ -89,11 +89,13 @@ class Bayes:
 
 class LogReg:
     def __init__(self, sample_weight=None) -> None:
-        self.n = 5
-        std = np.sqrt(2. / (5 + 1))
-        self.w = np.random.normal(scale=std, size=5) 
-        self.b = np.random.normal(scale=std, size=1)
-    
+        self.w = None
+        self.b = None
+        # self.n = 5
+        # std = np.sqrt(2. / (5 + 1))
+        # self.w = np.random.normal(scale=std, size=5) 
+        # self.b = np.random.normal(scale=std, size=1)
+        
     def loss(self, w, b, X, y):
         d = np.dot(X, w) + b
         # a = self.sigmoid(d)
@@ -115,14 +117,18 @@ class LogReg:
         distance = distance.reshape(-1, 1)
         return np.mean(distance * X, axis=0), np.mean(distance, axis=0)
     
-    def fit(self, X, y, epoch=1000, lr=0.0001):
+    def fit(self, X, y, epoch=10000, lr=0.0001):
+        self.n = X.shape[1]
+        std = np.sqrt(2. / (self.n + 1))
+        self.w = np.random.normal(scale=std, size=self.n) 
+        self.b = np.random.normal(scale=std, size=1)
         for i in range(epoch):
             dw, db = self.derivative(self.w, self.b, X, y)
             # y1, y2, y3, loss = self.forward(X, y, self.w, self.b)
             # dw, db = self.gradients(y1, y2, y3, X, y)
             self.w += lr * dw
             self.b += lr * db
-            if (i + 1) % 10 == 0:
+            if (i + 1) % 1000 == 0:
             # 无法展示 loss 值，因为样本中的 0 代入这里会直接显示 nan，无法数据可视化
                 print('epoch:{}, L: {}'.format(i+1, self.loss(self.w, self.b, X, y)))
         return
@@ -184,7 +190,14 @@ def get_data(path):
     data['TotalCharges']=pd.to_numeric(data['TotalCharges'],errors='coerce')
     # data['tenure']=pd.to_numeric(data['tenure'],errors='coerce')
     data.loc[data['TotalCharges'].isnull().values==True,'TotalCharges'] = data[data['TotalCharges'].isnull().values==True]['MonthlyCharges']
-    data = data[['MultipleLines','tenure','PaymentMethod', 'MonthlyCharges', 'TotalCharges', 'Churn']]
+    # 数据归一化
+    # for key in ['TotalCharges']:
+    #     data[key] = ( data[key] - data[key].min() ) / data[key].max() - data[key].min()
+        # print(data[key].mean())
+        # print(data[key].var())
+        # print(data[key] - data[key].mean())
+        # break
+    data = data[['tenure','MonthlyCharges', 'TotalCharges', 'Churn']]
     columns = data.columns.to_list()
     for key in columns:
         if key != 'TotalCharges':
@@ -193,62 +206,6 @@ def get_data(path):
     target = data['Churn'].values # 取得所有的 y
     data = data.drop('Churn', axis=1).to_numpy() # 取得 X
     return data, target
-
-class AdaBoost:
-
-    def __init__(self, m, T, clf):
-        # 注意这里的分类器可以不是同一个模型：可以是m个Logistic，也可以是一些朴素贝叶斯+Logistic
-        self.clf = [clf for _ in range(T)]
-        # self.m = m
-        self.T = 50 if T == None else T
-        # 缓存基分类器和权重参数
-        self.clf_arr = []
-        self.alpha_arr = []
-        self.y_y = None
- 
-    def fit(self, X, y):
-        self.y_y = list(set(y))
-        
-        # train_x, test_x, train_y, test_y = train_test_split(data, target, test_size=0.30, stratify = target, random_state = 1)
-        num = X.shape[0]
-        self.w = np.ones(num) / num
-        self.beta = np.zeros(self.T)
-        res = np.zeros(X.shape[1])
-
-        for t in range(self.T):
-            # 这里默认每个模型都有 sklearn 风格的 model.fit() 函数
-            # 并且将 W 作为已知权重代入其中
-            # D(i) 以 取1的概率大小 为准
-            epsilon = 0
-            self.clf[t].fit(X, y, sample_weight = self.w)
-            # self.clf_arr.extend([self.clf])
-            # 预测结果、预测概率
-            y_pred = self.clf[t].predict(X)
-            print("目前的精确度：{}",np.sum(y_pred==y.reshape(-1))/len(y_pred))
-            not_equal = (y_pred != y).reshape(-1)
-            epsilon = np.dot(self.w.reshape(-1), not_equal.T)
-            if epsilon > 0.5:
-                self.T = t - 1
-                return
-            beta_t = 1 / (1 - epsilon)
-            self.beta[t] = beta_t
-            self.w = self.w * (beta_t ** (1 - not_equal))
-            self.w /= np.sum(self.w)
-        self.beta = np.log(1 / self.beta)
-        # for i in range(X.shape[1]):
-        #     res[i] = 
-        return
-
-    def predict(self, X):
-        res = np.zeros((len(self.y_y), X.shape[0]))
-        self.beta = np.log(1 / self.beta) # (1, (len.self.T))
-        for ans in range(len(self.y_y)):
-            pred_array = np.zeros((self.T, X.shape[0]))
-            for i in range(self.T):
-                pred_array[i] = (self.clf[i].predict(X) == self.y_y[ans]).reshape(-1)
-            res[ans] = np.dot(self.beta, pred_array)
-        res = np.argmax(res, axis=0)
-        return res
  
 if __name__ == '__main__':
     
@@ -256,8 +213,8 @@ if __name__ == '__main__':
     # print(data)
     # 在外面转成numpy送进去
     train_x, test_x, train_y, test_y = train_test_split(data, target, test_size=0.30, stratify = target, random_state = 1)
-    # LDA_predict(train_x, test_x, train_y, test_y)
-    # bayes_predict(train_x, test_x, train_y, test_y)
+    LDA_predict(train_x, test_x, train_y, test_y)
+    bayes_predict(train_x, test_x, train_y, test_y)
     LR_predict(train_x, test_x, train_y, test_y)
     # print()
 
