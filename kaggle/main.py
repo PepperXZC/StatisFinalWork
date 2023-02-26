@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
-# cluster_1 = cluster_1.drop('Churn', axis=1)
 from sklearn.linear_model import LogisticRegression
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as skLDA
 
@@ -23,7 +22,6 @@ class LDA:
     def fit(self, X, y):
         X0, X1 = X[y.reshape(-1) == 0], X[y.reshape(-1) == 1]
         
-        # 类间散度矩阵什么时候算过吗？
         s0, s1 = self.cov_calculate(X0), self.cov_calculate(X1)
         sw = s0 + s1
         mu0, mu1 = X0.mean(0), X1.mean(0)
@@ -47,7 +45,6 @@ class LDA:
             y = 1 * (h < 0)
             y_pred.append(y)
         return np.array(y_pred)
-    # print(w, w[0], w[1])
 
 class Bayes:
     def __init__(self, n_classes = 2) -> None:
@@ -91,21 +88,17 @@ class LogReg:
     def __init__(self, sample_weight=None) -> None:
         self.w = None
         self.b = None
-        # self.n = 5
-        # std = np.sqrt(2. / (5 + 1))
-        # self.w = np.random.normal(scale=std, size=5) 
-        # self.b = np.random.normal(scale=std, size=1)
         
     def loss(self, w, b, X, y):
         d = np.dot(X, w) + b
         # a = self.sigmoid(d)
-        # 原本是求和，但因为 np.exp爆炸，这里改成mean好了一些
+        # 原本是求和,但因为 np.exp爆炸,这里改成mean好了一些
         t = np.log(1. + np.exp(d))
         return np.mean(y * d -  t, axis=0)
     
     def sigmoid(self, x):
         x = np.exp(np.array(x))
-        tell = np.where(np.isinf(x)==True) # 因为 exp 容易爆数量级，所以先记录一下exp过大的样本下标，其必判断为1
+        tell = np.where(np.isinf(x)==True) # 因为 exp 容易爆数量级,所以先记录一下exp过大的样本下标,其必判断为1
         res = x / (1. + x)
         res[tell] = 1
         return res
@@ -117,19 +110,21 @@ class LogReg:
         distance = distance.reshape(-1, 1)
         return np.mean(distance * X, axis=0), np.mean(distance, axis=0)
     
-    def fit(self, X, y, epoch=10000, lr=0.0001):
+    def fit(self, X, y, epoch=1000, lr=0.0005):
+        # 将最后一列'TotalCharges'数据归一化
+        fin = X.shape[1] - 1
+        X[:, fin] = ( X[:, fin] - X[:, fin].mean() ) / X[:, fin].var()
+        print(X)
         self.n = X.shape[1]
         std = np.sqrt(2. / (self.n + 1))
         self.w = np.random.normal(scale=std, size=self.n) 
         self.b = np.random.normal(scale=std, size=1)
         for i in range(epoch):
             dw, db = self.derivative(self.w, self.b, X, y)
-            # y1, y2, y3, loss = self.forward(X, y, self.w, self.b)
-            # dw, db = self.gradients(y1, y2, y3, X, y)
             self.w += lr * dw
             self.b += lr * db
-            if (i + 1) % 1000 == 0:
-            # 无法展示 loss 值，因为样本中的 0 代入这里会直接显示 nan，无法数据可视化
+            if (i + 1) % 100 == 0:
+            # 无法展示 loss 值,因为样本中的 0 代入这里会直接显示 nan,无法数据可视化
                 print('epoch:{}, L: {}'.format(i+1, self.loss(self.w, self.b, X, y)))
         return
     
@@ -147,7 +142,7 @@ def evaluate(y_pred, y_true):
     P = TP / (TP + FP)
     R = TP / (TP + FN)
     F1 = (2 * P * R) / (P + R)
-    print("查准率:{}, 查全率:{}，F1度量：{}".format(P, R, F1))
+    print("查准率:{}, 查全率:{},F1度量：{}".format(P, R, F1))
     return P, R, F1
 
 def LDA_predict(train_x, test_x, train_y, test_y):
@@ -157,14 +152,14 @@ def LDA_predict(train_x, test_x, train_y, test_y):
     # print(y_pred)
     print("(LDA)测试集预测精度为acc=",np.sum(y_pred==test_y.reshape(-1))/len(y_pred))
     evaluate(y_pred, test_y)
-    lda= skLDA(n_components=1, solver='svd')
-    lda.fit(train_x,train_y)
-
-    X_sklearn = lda.transform(train_x)
-    y_pred_sklearn = lda.predict(test_x)
+    # 下面是 sklearn 标准的 LDA 函数，解锁注释以运行
+    # lda= skLDA(n_components=1, solver='svd')
+    # lda.fit(train_x,train_y)
+    # X_sklearn = lda.transform(train_x)
+    # y_pred_sklearn = lda.predict(test_x)
     # print(y_pred_sklearn)
     # print(np.sum(np.array([y_pred == y_pred_sklearn])))
-    print ('LDA的正确率:',lda.score(test_x,test_y))
+    # print ('LDA的正确率:',lda.score(test_x,test_y))
 
 def bayes_predict(train_x, test_x, train_y, test_y):
     bayes = Bayes()
@@ -185,6 +180,72 @@ def LR_predict(train_x, test_x, train_y, test_y):
     # # y_pred = LR.predict(test_x)
     # print("(LR) sklearn版本正确率：", LR.score(test_x, test_y))
 
+def make_plot(path):
+    # 分析是否为流失的顾客
+    data = pd.read_csv(path)
+    columns = data.columns.to_list()
+    
+    # 设置 plt.title 可以显示中文
+    plt.rcParams['font.sans-serif']=['SimHei']
+    plt.rcParams['axes.unicode_minus'] = False
+    plt.rcParams['figure.figsize']=5,5
+    plt.pie(data['Churn'].value_counts(),labels=data['Churn'].value_counts().index,autopct='%.2f%%')
+    plt.title("流失用户占比")
+    plt.show()
+    
+    chinese_name = {
+        'PhoneService':'电话服务',
+        'MultipleLines':'多重号码',
+        # 'InternetService':'连接宽带',
+        'OnlineSecurity':'网络安全服务',
+        'OnlineBackup':'线上备份',
+        'DeviceProtection':'设备保护',
+        'TechSupport':'技术支持',
+        'StreamingTV':'网络电视',
+        'StreamingMovies':'网络电影'
+    }
+
+    def del_no_phone(df1):
+        temp_df = df1[df1['variable'] == '多重号码']
+        del_list = temp_df[temp_df['是否拥有'] == 'No phone service'].index.to_list()
+        return df1.drop(df1.index[del_list])
+
+    cols = [j for (i, j) in chinese_name.items()]
+    data.rename(columns=chinese_name, inplace=True)
+    df_no = data[data['InternetService'] == 'No']
+    plt.pie(df_no['Churn'].value_counts(),labels=df_no['Churn'].value_counts().index,autopct='%.2f%%')
+    plt.title("未接入网的流失用户占比")
+    plt.show()
+
+    # data[data['连接宽带'] == 'DSL' and data['连接宽带'] == 'Fiber optic', ['连接宽带']] = 'Yes'
+    # df1由data的列变成行（显示为列变量）并在新列值中列出所有关联值（每个样本提供至少一个）
+    # 排除了所有 连接宽带 的数据。
+    
+    df1 = pd.melt(data[data['InternetService'] != 'No'][cols])
+    df1.rename(columns={'value':'是否拥有'},inplace=True)
+    df1 = del_no_phone(df1)
+    # df1 = pd.melt(data[cols]) 
+    # df1.drop(df1[df1['variable'] == '多重号码'] == 'No phone service', inplace=True)
+    plt.figure(figsize=(10,5))
+    ax = sns.countplot(data=df1, x='variable', hue='是否拥有')
+    ax.set(xlabel='网络附加服务',ylabel='用户数量')
+    plt.rcParams.update({'font.size':10})
+    plt.title('所有用户与网络附加服务(第一组变量)相关关系')
+    plt.show()
+
+    # 非流失版本
+    data = data[data['Churn'] == 'Yes']
+    df1 = pd.melt(data[data['InternetService'] != 'No'][cols])
+    df1.rename(columns={'value':'是否拥有'},inplace=True)
+    df1 = del_no_phone(df1)
+    plt.figure(figsize=(10,5))
+    ax2 = sns.countplot(data=df1, x='variable', hue='是否拥有')
+    ax2.set(xlabel='网络附加服务',ylabel='用户数量')
+    plt.rcParams.update({'font.size':10})
+    plt.title('已流失用户与网络附加服务(第一组变量)相关关系')
+    plt.show()
+
+    
 def get_data(path):
     data = pd.read_csv(path)
     data['TotalCharges']=pd.to_numeric(data['TotalCharges'],errors='coerce')
@@ -210,8 +271,7 @@ def get_data(path):
 if __name__ == '__main__':
     
     data, target = get_data(path='WA_Fn-UseC_-Telco-Customer-Churn.csv')
-    # print(data)
-    # 在外面转成numpy送进去
+    # make_plot(path='WA_Fn-UseC_-Telco-Customer-Churn.csv')
     train_x, test_x, train_y, test_y = train_test_split(data, target, test_size=0.30, stratify = target, random_state = 1)
     LDA_predict(train_x, test_x, train_y, test_y)
     bayes_predict(train_x, test_x, train_y, test_y)

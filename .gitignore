@@ -1,4 +1,4 @@
-*.csv
+CORD-19/*.csv
 *.rar
 *.ipynb
 *.txt
